@@ -1,0 +1,64 @@
+:root {
+    /* Color Palette (HSL) */
+    --hue-primary: 262;
+    --hue-danger: 0;
+    --hue-success: 145;
+    --hue-warning: 42;
+    --hue-neutral: 220;
+
+    --color-primary: hsl(var(--hue-primary), 74%, 60%);
+    --color-primary-dark: hsl(var(--hue-primary), 74%, 50%);
+    --color-primary-light: hsl(var(--hue-primary), 74%, 95%);
+    --color-danger: hsl(var(--hue-danger), 84%, 60%);
+    --color-danger-dark: hsl(var(--hue-danger), 74%, 50%);
+    --color-success: hsl(var(--hue-success), 63%, 42%);
+
+    --color-text: hsl(var(--hue-neutral), 15%, 20%);
+    --color-text-light: hsl(var(--hue-neutral), 10%, 45%);
+    --color-surface: hsl(0, 0%, 100%);
+    --color-surface-alt: hsl(var(--hue-neutral), 25%, 98%);
+    --color-border: hsl(var(--hue-neutral), 20%, 85%);
+    --color-header-bg: #35203d;
+    --color-header-text: #ffffff;
+    
+    /* Typography */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    
+    /* Sizing & Spacing */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+}
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    line-height: 1.6;
+}
+
+/* Screen Management */
+.screen {
+    display: none;
+}
+
+.screen.is-active {
+    display: block;
+}
+
+.screen-content {
+    padding: 2rem 1.5rem;
+}

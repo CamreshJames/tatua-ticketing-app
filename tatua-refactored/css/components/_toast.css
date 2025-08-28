@@ -1,0 +1,23 @@
+.toast {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: var(--color-success);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 2000;
+}
+
+.toast.is-visible {
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.is-error {
+    background: var(--color-danger);
+}
