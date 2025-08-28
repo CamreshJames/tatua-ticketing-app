@@ -1,4 +1,4 @@
-const CIPHER_KEY = 'tatua_super_secret_key_for_aes_2025!';
+const CIPHER_KEY = '1BwRbdWJ9A0R0dFC1ZtrpUw93WBjhn93nede7VO9GgI=';
 
 export function encryptAES(text) {
     try {
