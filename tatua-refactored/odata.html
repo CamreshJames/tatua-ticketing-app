@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic OData Table</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --border-color: #dee2e6;
+            --background-color: #f8f9fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f7f6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background-color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #f2f2f2;
+        }
+
+        .btn svg {
+            width: 1.25em;
+            height: 1.25em;
+        }
+
+        .btn--primary {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn--primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn--add {
+            color: var(--primary-color);
+            border-style: dashed;
+        }
+
+        .btn--remove {
+            background: #fbecec;
+            color: #dc3545;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* --- Table Styles & NEW Loading State --- */
+        #people-table {
+            min-height: 400px;
+        }
+
+        [data-dynamic-table-wrapper] {
+            position: relative;
+        }
+
+        [data-dynamic-table-wrapper].is-loading::before {
+            content: 'Loading...';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #555;
+            z-index: 10;
+            border-radius: 4px;
+        }
+
+        [data-dynamic-table-scroll-container] {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: var(--background-color);
+            font-weight: 600;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        [data-dynamic-table-pagination] {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 0.5em 0;
+        }
+
+        [data-pagination-controls] {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        [data-pagination-controls] button {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        [data-pagination-controls] button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* --- Modal Styles --- */
+        .modal {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 100;
+        }
+
+        .modal.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;
+        }
+
+        .modal-header,
+        .modal-footer {
+            padding: 1rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .modal-title-group svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .filter-row,
+        .sorter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .sorter-row {
+            grid-template-columns: 1fr 1fr auto;
+        }
+
+        select,
+        input {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+        <header class="header">
+            <div class="header__logo">
+                <img src="logo.png" alt="Tatua Logo">
+                <h1>Tatua</h1>
+            </div>
+            <nav class="header__nav">
+                <a href="index.html" class="nav-link is-active" data-screen="raiseTicket">Raise Ticket</a>
+                <a href="#" class="nav-link" data-screen="ticketsList">Tickets List</a>
+                <a href="odata.html" style="color: aliceblue; text-decoration: none;">Odata People</a>
+            </nav>
+            <div class="header__storage-selector">
+                <label for="storageType">Storage:</label>
+                <select id="storageType">
+                    <option value="memory">In Memory</option>
+                    <option value="session">Session</option>
+                    <option value="local">Local</option>
+                </select>
+            </div>
+        </header>
+        <div class="table-controls">
+            <button id="sortBtn" class="btn"><svg viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zM3 7a1 1 0 000 2h10a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM13 16a1 1 0 102 0v-5.586l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 101.414 1.414L13 10.414V16z" />
+                </svg>Sort</button>
+            <button id="filterBtn" class="btn"><svg viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                        clip-rule="evenodd" />
+                </svg>Filter</button>
+            <button id="refreshBtn" class="btn"><svg viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                        clip-rule="evenodd" />
+                </svg>Refresh</button>
+        </div>
+
+        <div id="people-table"></div>
+
+        <!-- Modals -->
+        <div id="filterModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title-group"><svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <h2>Filter Table</h2>
+                    </div><button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="filterRowsContainer"></div><button id="addFilterBtn" class="btn btn--add">+ Add
+                        Filter</button>
+                </div>
+                <div class="modal-footer"><button id="resetFilterBtn" class="btn">Reset Filters</button><button
+                        id="submitFilterBtn" class="btn btn--primary">Apply Filters</button></div>
+            </div>
+        </div>
+        <div id="sortModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title-group"><svg viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                                d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zM3 7a1 1 0 000 2h10a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM13 16a1 1 0 102 0v-5.586l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 101.414 1.414L13 10.414V16z" />
+                        </svg>
+                        <h2>Sort Table</h2>
+                    </div><button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="sorterRowsContainer"></div><button id="addSorterBtn" class="btn btn--add">+ Add
+                        Sorter</button>
+                </div>
+                <div class="modal-footer"><button id="resetSorterBtn" class="btn">Reset Sorting</button><button
+                        id="submitSorterBtn" class="btn btn--primary">Apply Sorting</button></div>
+            </div>
+    </div>
+
+    <script type="module">
+        import { createDynamicTable } from './js/table.js';
+
+        const odataDataSource = async (params) => {
+            const { page, pageSize, filters, sorters } = params;
+            const skip = (page - 1) * pageSize;
+            const baseUrl = 'https://services.odata.org/v4/TripPinServiceRW/People';
+
+            const query = new URLSearchParams({
+                '$top': pageSize, // <-- FINAL FIX: Use the dynamic pageSize from the table config.
+                '$skip': skip,
+                '$count': 'true'
+            });
+
+            if (filters && filters.length > 0) {
+                const filterStr = filters.map(f => {
+                    const value = `'${f.value.replace(/'/g, "''")}'`;
+                    if (f.operator === 'contains') return `contains(tolower(${f.column}), tolower(${value}))`;
+                    return `${f.column} ${f.operator} ${value}`;
+                }).join(' and ');
+                query.set('$filter', filterStr);
+            }
+
+            if (sorters && sorters.length > 0) {
+                const sorterStr = sorters.map(s => `${s.column} ${s.order}`).join(',');
+                query.set('$orderby', sorterStr);
+            }
+
+            const url = `${baseUrl}?${query.toString()}`;
+            console.log("Fetching OData URL:", url);
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`OData request failed: ${response.statusText}`);
+            const result = await response.json();
+            
+            console.log("Full OData response received:", result);
+            
+            return { data: result.value, totalCount: result['@odata.count'] };
+        };
+
+        createDynamicTable('people-table', {
+            dataSource: odataDataSource,
+            keyField: 'UserName',
+            columns: [
+                { id: 'FirstName', caption: 'First Name' },
+                { id: 'LastName', caption: 'Last Name' },
+                { id: 'UserName', caption: 'Username', sortable: false },
+                { id: 'Gender', caption: 'Gender' },
+                { id: 'Emails', caption: 'Email', sortable: false, filterable: false, render: (row) => row.Emails?.[0] || 'N/A' }
+            ],
+            pagination: { enabled: true, pageSize: 2 },
+            logging: true,
+            controls: {
+                sortTriggerId: 'sortBtn',
+                filterTriggerId: 'filterBtn',
+                refreshTriggerId: 'refreshBtn',
+                sortModalId: 'sortModal',
+                filterModalId: 'filterModal'
+            },
+            selectable: true, 
+        });
+    </script>
+</body>
+
+</html>

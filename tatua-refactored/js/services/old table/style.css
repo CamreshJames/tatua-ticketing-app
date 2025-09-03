@@ -1,0 +1,47 @@
+.table-container {
+    max-width: 1000px;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+}
+.dynamic-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+.dynamic-table th, .dynamic-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+.dynamic-table th {
+    background: #f4f4f4;
+    font-weight: bold;
+}
+.dynamic-table tr:hover {
+    background: #f9f9f9;
+}
+.empty-state {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #333;
+}
+.action-btn.is-active {
+    color: #007bff;
+}
+.action-btn:hover {
+    color: #0056b3;
+}
+.icon {
+    width: 20px;
+    height: 20px;
+}

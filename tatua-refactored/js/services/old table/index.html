@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Table Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="ticketsTable"></div>
+
+    <script type="module">
+        import { createDynamicTable } from './Table.js';
+
+        const tickets = [
+            {
+                id: 'TKT-1',
+                fullName: 'James Mwangi',
+                email: 'james@skyworld.com',
+                phone: '0741593506',
+                subject: 'Login Issue',
+                message: 'Cannot login to account',
+                contact: 'Email',
+                dateCreated: '2025-05-25T09:00:00Z',
+                status: 'Open'
+            },
+            {
+                id: 'TKT-2',
+                fullName: 'Dennis Ogweno',
+                email: 'dennis@skyworld.com',
+                phone: '0712345678',
+                subject: 'Payment Problem',
+                message: 'Payment not processed',
+                contact: 'Phone',
+                dateCreated: '2025-05-25T10:00:00Z',
+                status: 'Open'
+            }
+        ];
+
+        const tableConfig = {
+            data: tickets,
+            columns: [
+                { id: 'id', caption: 'Ticket ID', size: 120, hide: false },
+                { 
+                    id: 'fullName', 
+                    caption: 'Raised by', 
+                    size: 300,
+                    render: (row) => `
+                        <div class="user-name">${row.fullName}</div>
+                        <div class="user-email">${row.email}</div>
+                    `
+                },
+                { 
+                    id: 'subject', 
+                    caption: 'Ticket Details', 
+                    size: 300,
+                    render: (row) => `
+                        <div class="ticket-subject">${row.subject}</div>
+                        <div class="ticket-message">${row.message}</div>
+                    `
+                },
+                { 
+                    id: 'dateCreated', 
+                    caption: 'Date Created', 
+                    size: 150,
+                    render: (row) => new Date(row.dateCreated).toLocaleString()
+                }
+            ],
+            actions: [],
+            // actions: [
+            //     {
+            //         type: 'button',
+            //         title: 'View',
+            //         icon: '<svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>',
+                    
+            //         handler: (id) => `app.viewTicket('${id}')`
+            //     },
+            //     {
+            //         type: 'link',
+            //         title: 'Email User',
+            //         icon: '<svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg>',
+            //         href: (row) => `mailto:${row.email}`,
+            //         isActive: (row) => row.contact === 'Email'
+            //     },
+            //     {
+            //         type: 'link',
+            //         title: 'Call User',
+            //         icon: '<svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>',
+            //         href: (row) => `tel:${row.phone}`,
+            //         isActive: (row) => row.contact === 'Phone'
+            //     },
+            //     {
+            //         type: 'button',
+            //         title: 'Edit',
+            //         icon: '<svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>',
+            //         handler: (id) => `app.editTicket('${id}')`
+            //     },
+            //     {
+            //         type: 'button',
+            //         title: 'Delete',
+            //         icon: '<svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>',
+            //         handler: (id) => `app.confirmDelete('${id}')`
+            //     }
+            // ],
+            filters: [
+                { column: 'status', relation: 'equals', value: 'Open' }
+            ],
+            sorters: [
+                { column: 'dateCreated', order: 'desc' }
+            ],
+            emptyMessage: 'No tickets found',
+            tableClass: 'tickets-table',
+            onRowClick: (id) => `app.viewTicket('${id}')`
+        };
+
+        const tableInstance = createDynamicTable('ticketsTable', tableConfig);
+
+        // Example global app object for action handlers
+        window.app = {
+            viewTicket: (id) => console.log(`View ticket: ${id}`),
+            editTicket: (id) => console.log(`Edit ticket: ${id}`),
+            confirmDelete: (id) => console.log(`Delete ticket: ${id}`)
+        };
+    </script>
+</body>
+</html>
